@@ -46,6 +46,14 @@ let light = {
     }
 }
 
+let angles = [], rayDistance = 300
+
+for(let i = 0; i < 360; i ++){
+    let alpha = (i * Math.PI) / 180 // Get radians from degrees
+    angles.push(alpha) 
+    console.log(i, angles[i])
+}
+
 
 function update() {
     light.updateLight()
@@ -55,6 +63,20 @@ function draw() {
     box.draw()
 
     light.drawLight()
+
+    for(let i = 0; i < angles.length; i ++){
+        let rayDirectionX = Math.cos(angles[i])
+        let rayDirectionY = Math.sin(angles[i])
+
+        let rayEndX = light.x + rayDirectionX * rayDistance
+        let rayEndY = light.y + rayDirectionY * rayDistance
+
+        context.strokeStyle = "yellow"
+        context.beginPath()
+        context.moveTo(light.x, light.y)
+        context.lineTo(rayEndX, rayEndY)
+        context.stroke()
+    }
 }
 
 function keyup(key) {
