@@ -46,17 +46,40 @@ let light = {
     }
 }
 
-let angles = [], rayDistance = 300
+let angles = [], rays = 360, rayDistance = 500
 
-for(let i = 0; i < 360; i ++){
+for(let i = 0; i < rays; i ++){
     let alpha = (i * Math.PI) / 180 // Get radians from degrees
     angles.push(alpha) 
-    console.log(i, angles[i])
+    //console.log(i, angles[i])
 }
 
+function intersect(x1, y1, x2, y2, x3, y3, x4, y4){
+    let check = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4) //Denominator check if it is equal to 0 the lines are parallel
+
+    if (check === 0) {
+        return null
+    }
+
+    //t determines where the intersection happens on the wall    
+    //u determines how far along the ray the intersection is
+
+    let t = ( (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4) ) / ( (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4) )    
+    let u = ( (x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3) ) / ( (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4) )
+    
+    if(t >= 0 && t <= 1 && u >= 0){
+        let intersectX = x1 + t * (x2 - x1)
+        let intersectY = y1 + t * (y2 - y1)
+        return { x: intersectX, y: intersectY } // Get the intersected point
+    }
+
+    return null
+}
 
 function update() {
     light.updateLight()
+
+    
 }
 
 function draw() {
@@ -64,7 +87,7 @@ function draw() {
 
     light.drawLight()
 
-    for(let i = 0; i < angles.length; i ++){
+    for(let i = 0; i < rays; i ++){
         let rayDirectionX = Math.cos(angles[i])
         let rayDirectionY = Math.sin(angles[i])
 
