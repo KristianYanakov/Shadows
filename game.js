@@ -1,5 +1,5 @@
 ﻿﻿endlessCanvas = true
-document.getElementById("canvas-id").style.backgroundColor = "#FED2E2"
+document.getElementById("canvas-id").style.backgroundColor = "black"//#FED2E2
 
 let colorPallete = ["#C68EFD", "#E9A5F1", "#8F87F1"]
 let width = window.innerWidth, height = window.innerHeight
@@ -38,7 +38,7 @@ class Line{
     }
 
     draw(){
-        context.strokeStyle = "black"
+        context.strokeStyle = "white"
         //context.fillStyle = this.color
         context.beginPath()
         context.moveTo(this.x1, this.y1)
@@ -51,7 +51,12 @@ class Line{
 //let box = new Box(width/2 - 100, height/2 - 100, width/2 + 100, height/2 + 100)
 
 //let line = new Line(400, 600, 800, 650)
-let lines = [new Line(400, 100, 1000, 550), new Line(400, 100, 200, 700), new Line(400, 600, 800, 650)]
+//let lines = [new Line(400, 100, 1000, 550), new Line(400, 100, 200, 700), new Line(400, 600, 800, 650)]
+
+let lines = [], lineNum = 8;
+for(let i = 0; i < lineNum; i ++){
+    lines.push(new Line(Math.random()*1000, Math.random()*800, Math.random()*1000, Math.random()*800))
+}
 
 let light = {
     x: 0,
@@ -69,9 +74,9 @@ let light = {
     }
 }
 
-let angles = [], rayDistance = 300
+let angles = [], rayDistance = 350
 
-for(let i = 0; i < 360; i ++){
+for(let i = 0; i < 360; i += 0.1){//Instead of 360 i am making 3600 rays now for better visual effect
     let alpha = (i * Math.PI) / 180 // Get radians from degrees
     angles.push(alpha) 
     console.log(i, angles[i])
@@ -146,6 +151,13 @@ function draw() {
                 }
             }
         }
+        //Gradient
+        /*let finalX = closestIntersection ? closestIntersection.x : rayEndX;
+        let finalY = closestIntersection ? closestIntersection.y : rayEndY;
+        // Create a gradient from the light source to the intersection
+        let gradient = context.createLinearGradient(light.x, light.y, finalX, finalY);
+        gradient.addColorStop(0, "rgba(255, 255, 0, 1)");   // Bright Yellow at the source
+        gradient.addColorStop(1, "rgba(255, 255, 0, 0)");   // Transparent at the end*/
 
         // Draw the ray up to the intersection point
         context.strokeStyle = "yellow";
