@@ -1,4 +1,4 @@
-﻿endlessCanvas = true
+﻿﻿endlessCanvas = true
 document.getElementById("canvas-id").style.backgroundColor = "#FED2E2"
 
 let colorPallete = ["#C68EFD", "#E9A5F1", "#8F87F1"]
@@ -25,23 +25,36 @@ class Box{
         //context.stroke()
         context.fill()
     }
-
-    getEdges() {
-        return [
-            { x1: this.x1, y1: this.y1, x2: this.x2, y2: this.y1 }, // Top
-            { x1: this.x2, y1: this.y1, x2: this.x2, y2: this.y2 }, // Right
-            { x1: this.x2, y1: this.y2, x2: this.x1, y2: this.y2 }, // Bottom
-            { x1: this.x1, y1: this.y2, x2: this.x1, y2: this.y1 }  // Left
-        ];
-    }
-
 }
 
-let box = new Box(100, 100, 200, 200)
+class Line{
+    constructor(x1, y1, x2, y2){
+        this.x1 = x1
+        this.x2 = x2
+        this.y1 = y1
+        this.y2 = y2
+        this.color = colorPallete[Math.floor(Math.random()*colorPallete.length)]
+        
+    }
+
+    draw(){
+        context.strokeStyle = "black"
+        //context.fillStyle = this.color
+        context.beginPath()
+        context.moveTo(this.x1, this.y1)
+        context.lineTo(this.x2, this.y2)
+        context.stroke()
+        //context.fill()
+    }
+}
+
+//let box = new Box(width/2 - 100, height/2 - 100, width/2 + 100, height/2 + 100)
+
+let line = new Line(400, 100, 1000, 550)
 
 let light = {
-    x: width / 2,
-    y: height / 2,
+    x: 0,
+    y: 0,
     rad: 3,
     updateLight(){
         this.x = mouseX
@@ -55,80 +68,91 @@ let light = {
     }
 }
 
-let angles = [], rays = 360, rayDistance = 500
+let angles = [], rayDistance = 300
 
-for(let i = 0; i < rays; i ++){
-    let alpha = (i * 2 * Math.PI) / rays; // Get radians from degrees
+for(let i = 0; i < 360; i ++){
+    let alpha = (i * Math.PI) / 180 // Get radians from degrees
     angles.push(alpha) 
-    //console.log(i, angles[i])
+    console.log(i, angles[i])
 }
 
-function intersect(x1, y1, x2, y2, x3, y3, x4, y4){
-    let check = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4) //Denominator check if it is equal to 0 the lines are parallel
-
-    if (check === 0) {
-        return null
+function getIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
+    // Check if any of the lines have zero length
+    if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+        return null;
     }
 
-    //t determines where the intersection happens on the wall    
-    //u determines how far along the ray the intersection is
+    let denominator = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
 
-    let t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / check;
-    let u = ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x2 - x1)) / check;
-    
-    if(t >= 0 && t <= 1 && u > 0 && u < 1){
-        let intersectX = x1 + t * (x2 - x1)
-        let intersectY = y1 + t * (y2 - y1)
-        return { x: intersectX, y: intersectY, u: u} // Get the intersected point
+    // Check if lines are parallel
+    if (denominator === 0) {
+        return null;
     }
 
-    return null
+    let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
+    let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator;
+
+    // Check if intersection is within the segments
+    if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+        return null;
+    }
+
+    // Calculate the intersection point
+    let x = x1 + ua * (x2 - x1);
+    let y = y1 + ua * (y2 - y1);
+
+    return { x, y };
 }
 
 function update() {
     light.updateLight()
-
-
 }
 
 function draw() {
-    //context.clearRect(0, 0, canvas.width, canvas.height); // Clear previous frame
-
-    box.draw()
+    //box.draw()
+    line.draw()
 
     light.drawLight()
 
-    for(let i = 0; i < rays; i ++){
-        let rayDirectionX = Math.cos(angles[i])
-        let rayDirectionY = Math.sin(angles[i])
+    for (let i = 0; i < angles.length; i++) {
+        let rayDirectionX = Math.cos(angles[i]);
+        let rayDirectionY = Math.sin(angles[i]);
 
-        let rayEndX = light.x + rayDirectionX * rayDistance
-        let rayEndY = light.y + rayDirectionY * rayDistance
+        let rayEndX = light.x + rayDirectionX * rayDistance;
+        let rayEndY = light.y + rayDirectionY * rayDistance;
 
-
-        
         let closestIntersection = null;
-        let minU = Infinity;
+        let minDistance = rayDistance;
 
-        let edges = box.getEdges();
-        for (let edge of edges) {
-            let intersection = intersect(light.x, light.y, rayEndX, rayEndY, edge.x1, edge.y1, edge.x2, edge.y2);
-            if (intersection && intersection.u < minU) {
-                minU = intersection.u;
+        // Check intersection with each line in the scene
+        let intersection = getIntersection(
+            light.x, light.y, rayEndX, rayEndY, // Ray start and end
+            line.x1, line.y1, line.x2, line.y2  // Line segment start and end
+        );
+
+        if (intersection) {
+            let distance = Math.sqrt(
+                (intersection.x - light.x) ** 2 + (intersection.y - light.y) ** 2
+            );
+
+            if (distance < minDistance) {
+                minDistance = distance;
                 closestIntersection = intersection;
             }
         }
 
+        // Draw the ray up to the intersection point
+        context.strokeStyle = "yellow";
+        context.beginPath();
+        context.moveTo(light.x, light.y);
+
         if (closestIntersection) {
-            rayEndX = closestIntersection.x;
-            rayEndY = closestIntersection.y;
+            context.lineTo(closestIntersection.x, closestIntersection.y);
+        } else {
+            context.lineTo(rayEndX, rayEndY);
         }
 
-        context.strokeStyle = "yellow"
-        context.beginPath()
-        context.moveTo(light.x, light.y)
-        context.lineTo(rayEndX, rayEndY)
-        context.stroke()
+        context.stroke();
     }
 }
 
