@@ -50,7 +50,8 @@ class Line{
 
 //let box = new Box(width/2 - 100, height/2 - 100, width/2 + 100, height/2 + 100)
 
-let line = new Line(400, 100, 1000, 550)
+//let line = new Line(400, 600, 800, 650)
+let lines = [new Line(400, 100, 1000, 550), new Line(400, 100, 200, 700), new Line(400, 600, 800, 650)]
 
 let light = {
     x: 0,
@@ -110,7 +111,10 @@ function update() {
 
 function draw() {
     //box.draw()
-    line.draw()
+    //line.draw()
+    for(let i = 0; i < lines.length; i ++){
+        lines[i].draw()
+    }
 
     light.drawLight()
 
@@ -124,20 +128,22 @@ function draw() {
         let closestIntersection = null;
         let minDistance = rayDistance;
 
-        // Check intersection with each line in the scene
-        let intersection = getIntersection(
-            light.x, light.y, rayEndX, rayEndY, // Ray start and end
-            line.x1, line.y1, line.x2, line.y2  // Line segment start and end
-        );
-
-        if (intersection) {
-            let distance = Math.sqrt(
-                (intersection.x - light.x) ** 2 + (intersection.y - light.y) ** 2
+        // Loop through ALL lines to find the closest intersection
+        for (let j = 0; j < lines.length; j++) {
+            let intersection = getIntersection(
+                light.x, light.y, rayEndX, rayEndY, // Ray start and end
+                lines[j].x1, lines[j].y1, lines[j].x2, lines[j].y2 // Line segment start and end
             );
 
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestIntersection = intersection;
+            if (intersection) {
+                let distance = Math.sqrt(
+                    (intersection.x - light.x) ** 2 + (intersection.y - light.y) ** 2
+                );
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestIntersection = intersection;
+                }
             }
         }
 
